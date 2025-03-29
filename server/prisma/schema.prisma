@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(uuid())
+  name       String
+  email      String      @unique
+  role       String // "user", "admin"
+  password   String
+  lostItems  LostItem[]
+  foundItems FoundItem[]
+  claims     Claim[]
+}
+
+enum Category {
+  ELECTRONICS
+  ACCESSORIES
+  DOCUMENTS
+  CLOTHING
+  OTHER
+}
+
+model LostItem {
+  id          String   @id @default(uuid())
+  name        String
+  description String // User-provided details
+  category    Category
+  dateLost    DateTime
+  location    String
+  imageUrl    String? // Optional lost-side image
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  matches     Match[]
+}
+
+model FoundItem {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  category    Category
+  dateFound   DateTime
+  location    String
+  imageUrl    String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  claims      Claim[]
+  matches     Match[]
+}
+
+model Match {
+  id          String @id @default(uuid())
+  lostItemId  String
+  foundItemId String
+  accuracy    Float //a value between 0-1 (comparison bw items)
+
+  //status      String   // "pending", "verified", "rejected"
+
+  lostItem  LostItem  @relation(fields: [lostItemId], references: [id])
+  foundItem FoundItem @relation(fields: [foundItemId], references: [id])
+}
+
+model Claim {
+  id          String    @id @default(uuid())
+  foundItemId String
+  claimantId  String // Claiming user
+  details     String
+  status      String // "pending", "approved", "denied"
+  claimDate   DateTime  @default(now())
+  foundItem   FoundItem @relation(fields: [foundItemId], references: [id])
+  claimant    User      @relation(fields: [claimantId], references: [id])
+}
