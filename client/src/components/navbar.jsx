@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Shield, LogIn, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Import useAuth
-
+import { NavLink } from 'react-router-dom';
 export default function Navbar() {
   const Navigate = useNavigate();
-  const { isLoggedIn, logout } = useAuth(); // Get login state and logout function
+  const { isLoggedIn, user, logout } = useAuth(); // Get login state and logout function
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -19,11 +19,10 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            <a href="/" className="hover:text-blue-200 transition">Home</a>
-            <a href="/report" className="hover:text-blue-200 transition">Report Item</a>
-            <a href="/browse" className="hover:text-blue-200 transition">Browse Lost Items</a>
-            <a href="/faq" className="hover:text-blue-200 transition">FAQ</a>
-
+            <NavLink to="/" className="hover:text-blue-200 transition">Home</NavLink>
+            <NavLink to="/report" className="hover:text-blue-200 transition">Report Item</NavLink>
+            <NavLink to="/items" className="hover:text-blue-200 transition">Browse Items</NavLink>
+            <NavLink to="/myclaims" className="hover:text-blue-200 transition">Claims</NavLink>
             {isLoggedIn ? (
               <button
                 onClick={() => {
@@ -70,6 +69,7 @@ export default function Navbar() {
                   }}
                   className="bg-white text-blue-600 px-4 py-2 rounded-md font-medium flex items-center justify-center space-x-1 hover:bg-blue-100 transition"
                 >
+                  <span></span>
                   <span>Logout</span>
                 </button>
               ) : (

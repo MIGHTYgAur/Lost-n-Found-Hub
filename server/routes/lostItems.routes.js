@@ -25,6 +25,26 @@ lostRouter.get("/", async (req, res) => {
     }
 });
 
+// Get lost items reported by a specific user
+lostRouter.get('/user/:userId', async (req, res) => {
+    const { userId } = req.params;
+  
+    try {
+      const lostItems = await prisma.lostItem.findMany({
+        where: { userId: userId }, 
+      });
+  
+      if (!lostItems || lostItems.length === 0) {
+        return res.status(404).json({ error: 'No lost items found for this user' });
+      }
+  
+      res.json(lostItems);
+    } catch (error) {
+      console.error('Error fetching lost items for user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
 // Get a lost item by ID
 
 lostRouter.get("/:id", async (req, res) => {

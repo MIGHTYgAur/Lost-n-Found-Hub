@@ -75,6 +75,7 @@ model Claim {
   id          String    @id @default(uuid())
   foundItemId String
   claimantId  String // Claiming user
+  contactInfo  String    // phone 
   details     String
   status      String // "pending", "approved", "denied"
   claimDate   DateTime  @default(now())

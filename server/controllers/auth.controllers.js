@@ -69,7 +69,7 @@ export const logoutUser = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
     try {
-      console.log(req.cookies);
+      // console.log(req.cookies);
       const { token } = req.cookies;
       if (!token) {
         return res.status(401).json({ error: 'Unauthorized: No token provided' });

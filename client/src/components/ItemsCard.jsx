@@ -1,4 +1,4 @@
-const ItemCard = ({ item, filter }) => {
+const ItemCard = ({ item, filter, onClaim }) => {
     const dateField = filter === 'lost' ? item.dateLost : item.dateFound; // date field based on filter
     return (
       <div className="border rounded-lg overflow-hidden shadow-md bg-white hover:shadow-lg transition-shadow">
@@ -40,6 +40,15 @@ const ItemCard = ({ item, filter }) => {
               {new Date(dateField).toLocaleDateString()}
             </span>
           </div>
+
+          {filter === 'found' && (
+          <button
+            onClick={() => onClaim(item)}
+            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors"
+          >
+            Claim This Item
+          </button>
+        )}  
         </div>
       </div>
     );

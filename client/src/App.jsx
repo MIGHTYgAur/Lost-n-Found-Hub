@@ -7,6 +7,9 @@ import LostAndFoundLanding from './components/landing';
 import Navbar from './components/navbar';
 import { AuthProvider } from './context/AuthContext';
 import ItemsPage from './components/ItemsPage';
+import UserClaims from './components/UserClaims';
+import FounderClaims from './components/FounderClaims';
+
 function App() {
 //   const token = localStorage.getItem("token");
   const router = createBrowserRouter(
@@ -19,8 +22,10 @@ function App() {
          
           {/* <Route element={<ProtectedRoute />}>
           </Route> */}
+          <Route path="/myclaims" element={<UserClaims/>} />
           <Route path="/items" element={<ItemsPage/>} />
           <Route path="report" element={<ReportComponent />}></Route>
+          <Route path="/founder-claims" element={<FounderClaims />} />
         </Route>
       </>
     )

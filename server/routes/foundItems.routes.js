@@ -67,6 +67,26 @@ foundRouter.post("/", upload.single("image"), async (req, res) => {
     }
 });
 
+// Get found items reported by a specific user
+foundRouter.get('/user/:userId', async (req, res) => {
+    const prisma = new PrismaClient();
+    const { userId } = req.params;
+  
+    try {
+      const foundItems = await prisma.foundItem.findMany({
+        where: { userId: userId }
+      });
+  
+      if (!foundItems || foundItems.length === 0) {
+        return res.status(404).json({ error: 'No found items found for this user' });
+      }
+  
+      res.json(foundItems);
+    } catch (error) {
+      console.error('Error fetching found items for user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 foundRouter.get("/:id", async (req, res) => {    
     const prisma = new PrismaClient();
     const { id } = req.params;

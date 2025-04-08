@@ -1,23 +1,35 @@
-const express = require('express');
-const prisma = require('../prisma/client'); // Adjust the path to your Prisma client
-const claimRouter = express.Router();
+import express from 'express';
+import { PrismaClient } from '@prisma/client'; // Uncomment if using Prisma Client directly
 
+const claimRouter = express.Router();
+const prisma = new PrismaClient();
 // Create a new claim
 claimRouter.post('/', async (req, res) => {
-  const { userId, itemId, message } = req.body;
+  const { userId, itemId, secretDetails, contactInfo } = req.body;
 
-  if (!userId || !itemId || !message) {
+  if (!userId || !itemId || !secretDetails || !contactInfo) {
     return res.status(400).json({ error: 'Missing required fields: userId, itemId, or message' });
   }
-
+  //check if a claim already exists for this item and user
+    const existingClaim = await prisma.claim.findFirst({
+        where: {
+        foundItemId: itemId,
+        claimantId: userId,
+        },
+    });
+    if (existingClaim) {
+        return res.status(400).json({ error: 'Claim already exists for this item and user' });
+    }
   try {
     const claim = await prisma.claim.create({
       data: {
-        userId,
-        itemId,
-        message,
+        foundItemId: itemId,
+        claimantId: userId,
+        contactInfo,
+        details: secretDetails,
         status: 'PENDING', // Default status for a new claim
-      },
+        claimDate: new Date(), // Set the claim date to now
+    },
     });
     res.status(201).json(claim);
   } catch (error) {
@@ -25,6 +37,65 @@ claimRouter.post('/', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Get claims for a specific user
+claimRouter.get('/user/:userId', async (req, res) => {
+    const { userId } = req.params;
+  
+    try {
+      const claims = await prisma.claim.findMany({
+        where: { claimantId: userId },
+        include: {
+          foundItem: true, // Include details of the found item
+        },
+      });
+  
+      if (!claims || claims.length === 0) {
+        return res.status(404).json({ error: 'No claims found for this user' });
+      }
+  
+      res.json(claims);
+    } catch (error) {
+      console.error('Error fetching user claims:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
+
+// Get claims for items reported by the founder
+claimRouter.get('/founder/:founderId', async (req, res) => {
+    const { founderId } = req.params;
+  
+    try {
+      const claims = await prisma.claim.findMany({
+        where: {
+          foundItem: {
+            // the found item has user reference
+            userId: founderId, // Filter claims for items reported by this founder
+          },
+        },
+        include: {
+          foundItem: true, // Include details of the found item
+          claimant: true,  // Include details of the claimant
+        },
+      });
+  
+      const filteredClaims = claims.map((claim) => ({
+        ...claim,
+        contactInfo: claim.status === 'APPROVED' ? claim.contactInfo : null, // Hide contact info if not approved
+      }));
+  
+      if (!filteredClaims || filteredClaims.length === 0) {
+        return res.status(404).json({ error: 'No claims found for items reported by this founder' });
+      }
+  
+      res.json(filteredClaims);
+    } catch (error) {
+      console.error('Error fetching claims for founder:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
 
 // Get all claims
 claimRouter.get('/', async (req, res) => {
@@ -104,4 +175,4 @@ claimRouter.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = claimRouter;
+export default claimRouter;
